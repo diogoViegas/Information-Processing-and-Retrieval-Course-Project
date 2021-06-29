@@ -1,0 +1,71 @@
+<html>
+    <meta charset="utf-8">
+    
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+    
+    <!-- Load d3-cloud -->
+    <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
+    
+    <!-- Create a div where the graph will take place -->
+    <div id="my_dataviz" style="left: 300px; top: 20px; position: absolute;"></div>
+    
+    <script>
+    // List of words
+    
+     
+    var myWords = [{word: "malta prince", size: "70"}, {word: "andrew northern", size: "67"}, {word: "malta prince andrew", size: "64"}, {word: "prince andrew northern", size: "61"},
+                    {word: "andrew northern ireland", size: "58"}, {word: "boris johnson nato", size: "55"}, {word: "johnson nato china", size: "52"}, {word: "boris", size: "49"},
+                    {word: "johnson nato", size: "46"}, {word: "nato china", size: "43"}, {word: "china", size: "40"}, {word: "boris johnson", size: "37"},
+                    {word: "wealthy", size: "34"}, {word: "businessman", size: "31"}, {word: "charged", size: "28"}, {word: "rocked", size: "25"},
+                    {word: "wealthy businessman", size: "22"}, {word: "businessman charged", size: "19"}, {word: "charged murder", size: "16"}, {word: "murder case", size: "13"}]
+    var titles = {'malta prince': 'Prince Andrew’s Accuser Takes Her Case to the BBC\nYour Monday Briefing: Malta, Prince Andrew, Northern Ireland\nMalta Leader Says He Will Resign, as Murder Inquiry Widens\nIn Prince Andrew Scandal, Prince Charles Emerges as Monarch-in-Waiting\nWealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n6', 'andrew northern': 'Your Monday Briefing: Malta, Prince Andrew, Northern Ireland\n‘I Wanted to Die:’ Northern Ireland Confronts a Suicide Crisis\nPrince Andrew’s Accuser Takes Her Case to the BBC\nIn Prince Andrew Scandal, Prince Charles Emerges as Monarch-in-Waiting\n\n Number of Appearances: \n5', 'malta prince andrew': 'Prince Andrew’s Accuser Takes Her Case to the BBC\nYour Monday Briefing: Malta, Prince Andrew, Northern Ireland\nMalta Leader Says He Will Resign, as Murder Inquiry Widens\nIn Prince Andrew Scandal, Prince Charles Emerges as Monarch-in-Waiting\nWealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n9', 'prince andrew northern': 'Your Monday Briefing: Malta, Prince Andrew, Northern Ireland\n‘I Wanted to Die:’ Northern Ireland Confronts a Suicide Crisis\nPrince Andrew’s Accuser Takes Her Case to the BBC\nIn Prince Andrew Scandal, Prince Charles Emerges as Monarch-in-Waiting\n\n Number of Appearances: \n8', 'andrew northern ireland': 'Prince Andrew’s Accuser Takes Her Case to the BBC\nFacebook Testing a Way to Let You Move Photos to Rival Sites\nYour Monday Briefing: Malta, Prince Andrew, Northern Ireland\nIn Prince Andrew Scandal, Prince Charles Emerges as Monarch-in-Waiting\n‘I Wanted to Die:’ Northern Ireland Confronts a Suicide Crisis\n\n Number of Appearances: \n8', 'boris johnson nato': 'Your Tuesday Briefing: Boris Johnson, NATO, China\nFor Johnson, a Perilous Week Ahead, With the Politics of Terror and Trump\n\n Number of Appearances: \n3', 'johnson nato china': 'Your Tuesday Briefing: Boris Johnson, NATO, China\nFor Johnson, a Perilous Week Ahead, With the Politics of Terror and Trump\n\n Number of Appearances: \n3', 'boris': 'Your Tuesday Briefing: Boris Johnson, NATO, China\n\n Number of Appearances: \n1', 'johnson nato': 'Your Tuesday Briefing: Boris Johnson, NATO, China\nFor Johnson, a Perilous Week Ahead, With the Politics of Terror and Trump\n\n Number of Appearances: \n2', 'nato china': 'Your Tuesday Briefing: Boris Johnson, NATO, China\n\n Number of Appearances: \n1', 'china': 'Your Tuesday Briefing: Boris Johnson, NATO, China\n\n Number of Appearances: \n1', 'boris johnson': 'Your Tuesday Briefing: Boris Johnson, NATO, China\nFor Johnson, a Perilous Week Ahead, With the Politics of Terror and Trump\n\n Number of Appearances: \n3', 'wealthy': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n1', 'businessman': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n1', 'charged': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n1', 'rocked': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n1', 'wealthy businessman': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n2', 'businessman charged': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\n\n Number of Appearances: \n2', 'charged murder': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\nMalta Leader Says He Will Resign, as Murder Inquiry Widens\n\n Number of Appearances: \n3', 'murder case': 'Wealthy Businessman Charged in Murder Case That Rocked Malta\nPrince Andrew’s Accuser Takes Her Case to the BBC\nMalta Leader Says He Will Resign, as Murder Inquiry Widens\nDead Whale, 220 Pounds of Debris Inside, Is a ‘Grim Reminder’ of Ocean Trash\n\n Number of Appearances: \n5'}
+    console.log(titles)
+    colors = ["#11144C", "#3A9679", "#FABC60", "#E16262"]
+    
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, right: 10, bottom: 10, left: 10},
+        width = 1200 - margin.left - margin.right,
+        height = 950 - margin.top - margin.bottom;
+    
+    // append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+    
+    // Constructs a new cloud layout instance. It run an algorithm to find the position of words that suits your requirements
+    // Wordcloud features that are different from one word to the other must be here
+    var layout = d3.layout.cloud()
+      .size([width, height])
+      .words(myWords.map(function(d) { return {text: d.word, size:d.size}; }))
+      .padding(5)        //space between words
+      .rotate(function() { return ~~(Math.random() * 2) * 90; })
+      .fontSize(function(d) { return d.size; })      // font size of words
+      .on("end", draw);
+    layout.start();
+    
+    // This function takes the output of 'layout' above and draw the words
+    // Wordcloud features that are THE SAME from one word to the other can be here
+    function draw(words) {
+      svg
+        .append("g")
+          .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+          .selectAll("text")
+            .data(words)
+          .enter().append("text")
+            .style("font-size", function(d) { return d.size; })
+            .style("fill", function() { return colors[Math.floor(Math.random()*colors.length)] })
+            .attr("text-anchor", "middle")
+            .style("font-family", "Impact")
+            .attr("transform", function(d) {
+              return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+            })
+            .text(function(d) { return d.text; })
+            .append("title").text(function(d){return 'News Titles:\n'  + titles[d.text]});
+    }
+    </script>
+    
+    </html>
